@@ -2,6 +2,7 @@
 
 namespace chieff\modules\PasswordManager\models\search;
 
+use chieff\helpers\SecurityHelper;
 use chieff\modules\PasswordManager\models\Account;
 
 use yii\base\Model;
@@ -27,7 +28,7 @@ class AccountSearch extends Account
         return Model::scenarios();
     }
 
-    public function search($userId, $params)
+    public function search($userId, $passphrase, $params)
     {
         $query = Account::find();
 
@@ -48,40 +49,12 @@ class AccountSearch extends Account
             return $dataProvider;
         }
 
-//        if (Yii::$app->getModule('cms')->dataEncode) {
-//            if ($this->name) {
-//                $name = SecurityHelper::encode($this->name, 'aes-256-ctr', Yii::$app->getModule('cms')->passphrase);
-//            } else {
-//                $name = '';
-//            }
-//            if ($this->slug) {
-//                $slug = SecurityHelper::encode($this->slug, 'aes-256-ctr', Yii::$app->getModule('cms')->passphrase);
-//            } else {
-//                $slug = '';
-//            }
-//            if ($this->preview_text) {
-//                $preview_text = SecurityHelper::encode($this->preview_text, 'aes-256-ctr', Yii::$app->getModule('cms')->passphrase);
-//            } else {
-//                $preview_text = '';
-//            }
-//            if ($this->detail_text) {
-//                $detail_text = SecurityHelper::encode($this->detail_text, 'aes-256-ctr', Yii::$app->getModule('cms')->passphrase);
-//            } else {
-//                $detail_text = '';
-//            }
-//        } else {
-//            $name = $this->name;
-//            $slug = $this->slug;
-//            $preview_text = $this->preview_text;
-//            $detail_text = $this->detail_text;
-//        }
-
-        $query->andFilterWhere(['like', 'name', $this->name]);
-        $query->andFilterWhere(['like', 'site', $this->site]);
-        $query->andFilterWhere(['like', 'site', $this->email]);
-        $query->andFilterWhere(['like', 'site', $this->login]);
-        $query->andFilterWhere(['like', 'site', $this->password]);
-        $query->andFilterWhere(['like', 'site', $this->comment]);
+        $query->andFilterWhere(['like', 'name', $this->name ? SecurityHelper::encode($this->name, 'aes-256-ctr', $passphrase) : $this->name]);
+        $query->andFilterWhere(['like', 'site', $this->site ? SecurityHelper::encode($this->site, 'aes-256-ctr', $passphrase) : $this->site]);
+        $query->andFilterWhere(['like', 'email', $this->email ? SecurityHelper::encode($this->email, 'aes-256-ctr', $passphrase) : $this->email]);
+        $query->andFilterWhere(['like', 'login', $this->login ? SecurityHelper::encode($this->login, 'aes-256-ctr', $passphrase) : $this->login]);
+        $query->andFilterWhere(['like', 'password', $this->password ? SecurityHelper::encode($this->password, 'aes-256-ctr', $passphrase) : $this->password]);
+        $query->andFilterWhere(['like', 'comment', $this->comment ? SecurityHelper::encode($this->comment, 'aes-256-ctr', $passphrase) : $this->comment]);
 
         if ($this->created_at) {
             $tmp = explode(' - ', $this->created_at);

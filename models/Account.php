@@ -141,13 +141,16 @@ class Account extends \yii\db\ActiveRecord
         return $this->$attribute;
     }
 
-    public function setAttributeValue($attribute) {
+    public function setAttributeValue($attribute, $passphrase = '') {
         if (
             ($this->$attribute != '') &&
             ($this->$attribute != null) &&
-            $this->passphrase
+            (
+                $this->passphrase ||
+                $passphrase
+            )
         ) {
-            $this->$attribute = SecurityHelper::encode($this->$attribute, 'aes-256-ctr', $this->passphrase);
+            $this->$attribute = SecurityHelper::encode($this->$attribute, 'aes-256-ctr', $this->passphrase ? $this->passphrase : $passphrase);
         }
     }
 

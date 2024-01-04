@@ -32,7 +32,7 @@ class AccountController extends \webvimark\components\AdminDefaultController
 
         $searchModel = $this->modelSearchClass ? new $this->modelSearchClass : null;
         if ($searchModel) {
-            $dataProvider = $searchModel->search($this->userId, Yii::$app->request->getQueryParams());
+            $dataProvider = $searchModel->search($this->userId, $passphrase, Yii::$app->request->getQueryParams());
         } else {
             $modelClass = $this->modelClass;
             $dataProvider = new ActiveDataProvider([
