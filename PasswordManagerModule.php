@@ -29,8 +29,8 @@ class PasswordManagerModule extends \yii\base\Module
      */
     public static function t($category, $message, $params = [], $language = null)
     {
-        if (!isset(Yii::$app->i18n->translations['modules/cms/*'])) {
-            Yii::$app->i18n->translations['modules/cms/*'] = [
+        if (!isset(Yii::$app->i18n->translations['modules/password-manager/*'])) {
+            Yii::$app->i18n->translations['modules/password-manager/*'] = [
                 'class' => 'yii\i18n\PhpMessageSource',
                 'sourceLanguage' => 'ru',
                 'basePath' => '@vendor/chieff/yii2-password-manager-module/messages',
@@ -40,7 +40,7 @@ class PasswordManagerModule extends \yii\base\Module
                 ],
             ];
         }
-        return Yii::t('modules/cms/' . $category, $message, $params, $language);
+        return Yii::t('modules/password-manager/' . $category, $message, $params, $language);
     }
 
 }
