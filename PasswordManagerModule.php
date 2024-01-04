@@ -6,6 +6,9 @@ use Yii;
 
 class PasswordManagerModule extends \yii\base\Module
 {
+
+    public $passphrase = '';
+
     /**
      * Pattern that will be applied for password.
      * Default pattern does not restrict user and can enter any set of characters.

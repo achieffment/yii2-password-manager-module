@@ -2,6 +2,7 @@
 
 namespace chieff\modules\PasswordManager\models;
 
+use chieff\helpers\SecurityHelper;
 use webvimark\modules\UserManagement\models\User;
 
 use yii\base\Security;
@@ -134,11 +135,41 @@ class AccountUser extends \yii\db\ActiveRecord
         return $this->hasOne(User::className(), ['id' => 'updated_by']);
     }
 
+    public function getPassphrase()
+    {
+        if (
+            $this->compareMasterPassword() &&
+            ($master_passphrase = Yii::$app->session->get('master_passphrase'))
+        ) {
+            return $master_passphrase;
+        }
+        return false;
+    }
+
     public function rememberMasterPassword()
     {
-        if ($this->user_id && $this->password_hash) {
-            Yii::$app->session->set('master_id', sha1($this->user_id));
-            Yii::$app->session->set('master_password', sha1($this->password_hash));
+        if (
+            $this->user_id &&
+            $this->password_hash
+        ) {
+            $master_id = SecurityHelper::encode($this->user_id, 'aes-256-ctr', Yii::$app->getModule('password-manager')->passphrase);
+            $master_password = SecurityHelper::encode($this->password_hash, 'aes-256-ctr', Yii::$app->getModule('password-manager')->passphrase);
+
+            if (!$master_id || !$master_password)
+                return false;
+
+            // making encoded passphrase for using in session
+            $master_passphrase = SecurityHelper::encode(
+                sha1($master_id . $master_password . Yii::$app->getModule('password-manager')->passphrase), 'aes-256-ctr',
+                Yii::$app->getModule('password-manager')->passphrase
+            );
+            if (!$master_passphrase)
+                return false;
+
+            Yii::$app->session->set('master_id', $master_id);
+            Yii::$app->session->set('master_password', $master_password);
+            Yii::$app->session->set('master_passphrase', $master_passphrase);
+
             return true;
         }
         return false;
@@ -148,15 +179,39 @@ class AccountUser extends \yii\db\ActiveRecord
     {
         if (
             !$password &&
-            $this->user_id && $this->password_hash &&
-            ($master_id = Yii::$app->session->get('master_id')) && ($master_password = Yii::$app->session->get('master_password')) &&
-            (sha1($this->user_id) == $master_id) && (sha1($this->password_hash) == $master_password)
+            $this->user_id &&
+            $this->password_hash &&
+            ($master_id = Yii::$app->session->get('master_id')) &&
+            ($master_password = Yii::$app->session->get('master_password')) &&
+            ($master_passphrase = Yii::$app->session->get('master_passphrase'))
         ) {
-            return true;
+
+            // comparing passphrase
+            $master_passphrase_check = SecurityHelper::encode(
+                sha1($master_id . $master_password . Yii::$app->getModule('password-manager')->passphrase), 'aes-256-ctr',
+                Yii::$app->getModule('password-manager')->passphrase
+            );
+            if ($master_passphrase != $master_passphrase_check)
+                return false;
+
+            $master_id = SecurityHelper::decode($master_id, 'aes-256-ctr', Yii::$app->getModule('password-manager')->passphrase);
+            $master_password = SecurityHelper::decode($master_password, 'aes-256-ctr', Yii::$app->getModule('password-manager')->passphrase);
+
+            if (!$master_id || !$master_password)
+                return false;
+
+            if (
+                ($this->user_id == $master_id) &&
+                ($this->password_hash == $master_password)
+            ) {
+                return true;
+            }
+
+        // comparing only by password for sign in
         } else if (
             $password &&
             $this->password_hash &&
-            ($this->validatePassword($password))
+            $this->validatePassword($password)
         ) {
             return true;
         }
