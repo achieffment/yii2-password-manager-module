@@ -3,7 +3,7 @@
     "description": "Password manager module for Yii 2",
     "autoload": {
         "psr-4": {
-            "chieff\\modules\\PasswordManagerModule\\": ""
+            "chieff\\modules\\PasswordManager\\": ""
         }
     },
     "require": {}
