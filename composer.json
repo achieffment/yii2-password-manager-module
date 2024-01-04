@@ -6,5 +6,9 @@
             "chieff\\modules\\PasswordManager\\": ""
         }
     },
-    "require": {}
+    "require": {
+        "chieff/helpers": "dev-main",
+        "chieff/yii2-user-management-module": "dev-master",
+        "rmrevin/yii2-fontawesome": "~3.5"
+    }
 }
